@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+        <style>
+            .response-item {
+                border: 1px solid #ccc;
+                padding: 10px;
+                margin-bottom: 15px;
+                border-radius: 5px;
+            }
+        </style>
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+        <title>API Requester</title>
+    </head>
+    <body>
+        <div class="container">
+            <h4>API Requester</h4>
+            <div class="input-field">
+                <input type="text" id="urlInput" class="validate">
+                <label for="urlInput">API URL</label>
+            </div>
+            <button class="btn waves-effect waves-light" onclick="makeRequests()">Make Requests</button>
+            <div id="responseContainer" class="row"></div>
+            <p id="meanLatency"></p>
+        </div>
+
+        <script>
+            const LOOP_NUMBER = 10;
+            const meanLatencyElement = document.getElementById('meanLatency');
+            meanLatencyElement.textContent = '';
+
+            function makeRequests() {
+                const url = document.getElementById('urlInput').value;
+                const responseContainer = document.getElementById('responseContainer');
+
+                // Clear previous data
+                responseContainer.innerHTML = '';
+
+                let allTime = makeRequest(url, 0, 0, LOOP_NUMBER);
+            }
+
+            function makeRequest(url, allTime, index, total) { 
+                if(index < total) {
+                    const startTime = Date.now();
+                    fetch(url, {mode: "no-cors"})
+                    // fetch(url)
+                        .then(response => response.text())
+                        .then(htmlContent => {
+                            const requestTime = Date.now() - startTime;
+                            const responseItem = document.createElement('div');
+                            responseItem.classList.add('col', 's12', 'm6', 'l4', 'response-item');
+                            responseItem.innerHTML = `<p>Request ${index + 1}:</p><div style="zoom:0.5">${htmlContent}</div><p>Latency Time: ${requestTime} ms</p>`;
+                            responseContainer.appendChild(responseItem);
+                            makeRequest(url, allTime + requestTime, index+1, total)
+                        })
+                } else {
+                    meanLatencyElement.textContent = `Mean Latency Time: ${allTime / LOOP_NUMBER} ms`;
+                }
+            }
+
+        </script>
+    </body>
+</html>
